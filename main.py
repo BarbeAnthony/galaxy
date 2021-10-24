@@ -3,6 +3,8 @@ from kivy.config import Config
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
 
+from kivy.core.window import Window
+from kivy import platform
 from kivy.app import App
 from kivy.graphics import Color, Line
 from kivy.properties import NumericProperty, Clock
@@ -29,11 +31,22 @@ class MainWidget(Widget):
     SPEED_X = 15
 
     def __init__(self, **kwargs):
-        super(MainWidget, self).__init__(
-            **kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
+        super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
         self.init_vertical_lines()
         self.init_horizontal_lines()
+        if self.is_desktop:
+            self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
+            self._keyboard.bind(on_key_down=self.on_keyboard_down, on_key_up=self.on_keyboard_up)
         Clock.schedule_interval(self.update, 1.0 / 60.0)
+
+    def is_desktop(self):
+        if platform in ('linux', 'win', 'macosx'):
+            return True
+        return False
+
+    def keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down, on_key_up=self.on_keyboard_up)
+        self._keyboard = None
 
     def on_parent(self, widget, parent):
         pass
@@ -63,6 +76,7 @@ class MainWidget(Widget):
         central_line_x = self.width / 2
         spacing_x = self.V_LINES_SPACING * self.width
         offset_x = (-self.V_LINES_NB / 2 + 0.5) * spacing_x
+        # traçage des lignes verticales
         for line in self.vertical_lines:
             line_x = int(central_line_x + offset_x - self.current_offset_x)
             x1, y1 = self.transform(line_x, 0)
@@ -88,6 +102,7 @@ class MainWidget(Widget):
         x_min = central_line_x + offset_x - self.current_offset_x
         x_max = central_line_x - offset_x - self.current_offset_x
 
+        # traçage des lignes horizontales
         for line in self.horizontal_lines:
             x1, y1 = self.transform(x_min, line_y - self.current_offset_y)
             x2, y2 = self.transform(x_max, line_y - self.current_offset_y)
@@ -134,14 +149,27 @@ class MainWidget(Widget):
         if self.current_offset_y >= spacing_y:
             self.current_offset_y -= spacing_y
 
+    # Contrôles au toucher ou au clic
     def on_touch_down(self, touch):
         if touch.x >= self.width/2:
-            self.current_speed_x = self.SPEED_X
+            self.current_speed_x = self.SPEED_X  # ->
         else:
-            self.current_speed_x = -self.SPEED_X
+            self.current_speed_x = -self.SPEED_X  # <-
 
     def on_touch_up(self, touch):
         self.current_speed_x = 0
+
+    # Contrôles au clavier
+    def on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'left':
+            self.current_speed_x = -self.SPEED_X
+        elif keycode[1] == 'right':
+            self.current_speed_x = +self.SPEED_X
+        return True
+
+    def on_keyboard_up(self, keyboard, keycode):
+        self.current_speed_x = 0
+        return True
 
 
 class GalaxyApp(App):
