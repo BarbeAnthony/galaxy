@@ -12,6 +12,9 @@ from kivy.uix.widget import Widget
 
 
 class MainWidget(Widget):
+    from user_actions import on_keyboard_up, on_keyboard_down, keyboard_closed, on_touch_down, on_touch_up
+    from transforms import transform, transform_2D, transform_perspective
+
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
@@ -43,28 +46,6 @@ class MainWidget(Widget):
         if platform in ('linux', 'win', 'macosx'):
             return True
         return False
-
-    def keyboard_closed(self):
-        self._keyboard.unbind(on_key_down=self._on_keyboard_down, on_key_up=self.on_keyboard_up)
-        self._keyboard = None
-
-    def on_parent(self, widget, parent):
-        pass
-
-    def on_size(self, *args):
-        # print(str(self.width) + " , " + str(self.height))
-        # self.perspective_point_x = self.width / 2
-        # self.perspective_point_y = self.height * 0.75
-        # print("perspective point : " + str(self.width / 2) + " , " + str(self.height * 0.75))
-        pass
-
-    def on_perspective_point_x(self, widget, value):
-        # print("perspective point x : " + str(value))
-        pass
-
-    def on_perspective_point_y(self, widget, value):
-        # print("perspective point y : " + str(value))
-        pass
 
     def init_vertical_lines(self):
         with self.canvas:
@@ -109,31 +90,6 @@ class MainWidget(Widget):
             line.points = (x1, y1, x2, y2)
             line_y += spacing_y
 
-    def transform(self, x, y):  # affichage en perspective pour jouer, ou en 2D pour débuguer
-        # return self.transform_2D(x, y)
-        return self.transform_perspective(x, y)
-
-    def transform_2D(self, x, y):
-        return int(x), int(y)
-
-    def transform_perspective(self, x, y):
-        # transformation linéaire de la coordonnée y : le haut de l'écran est projeté au point de perspective,
-        # ce qui est encore plus haut aussi
-        lin_y = y * self.perspective_point_y / self.height
-        if lin_y > self.perspective_point_y:
-            lin_y = self.perspective_point_y
-        # écart entre le point à transformer et le point de perspective
-        diff_x = x - self.perspective_point_x
-        diff_y = self.perspective_point_y - lin_y
-        # facteur de transformation vertical
-        factor_y = diff_y / self.perspective_point_y
-        factor_y = pow(factor_y, 4)  # modifier l'effet de perspective
-        # calcul des nouvelles coordonées
-        offset_x = diff_x * factor_y
-        tr_x = self.perspective_point_x + offset_x
-        tr_y = self.perspective_point_y - factor_y * self.perspective_point_y
-        return int(tr_x), int(tr_y)
-
     def update(self, dt):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
@@ -142,34 +98,12 @@ class MainWidget(Widget):
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
-        # déplacer le vaisseau latéralement
-        self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
             self.current_offset_y -= spacing_y
-
-    # Contrôles au toucher ou au clic
-    def on_touch_down(self, touch):
-        if touch.x >= self.width/2:
-            self.current_speed_x = self.SPEED_X  # ->
-        else:
-            self.current_speed_x = -self.SPEED_X  # <-
-
-    def on_touch_up(self, touch):
-        self.current_speed_x = 0
-
-    # Contrôles au clavier
-    def on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        if keycode[1] == 'left':
-            self.current_speed_x = -self.SPEED_X
-        elif keycode[1] == 'right':
-            self.current_speed_x = +self.SPEED_X
-        return True
-
-    def on_keyboard_up(self, keyboard, keycode):
-        self.current_speed_x = 0
-        return True
+        # déplacer le vaisseau latéralement
+        self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
 
 
 class GalaxyApp(App):
