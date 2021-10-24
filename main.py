@@ -1,4 +1,5 @@
 from kivy.config import Config
+
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
 
@@ -24,29 +25,15 @@ class MainWidget(Widget):
     SPEED = 1
 
     current_offset_x = 0
-    SPEED_X = 3
+    current_speed_x = 0
+    SPEED_X = 15
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(
             **kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
         self.init_vertical_lines()
         self.init_horizontal_lines()
-        Clock.schedule_interval(self.update, 1.0/60.0)
-
-    def update(self, dt):
-        # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
-        # print(str(dt*60))
-        time_factor = dt * 60
-        # actualiser la grille et faire avancer le terrain :
-        self.update_vertical_lines()
-        self.update_horizontal_lines()
-        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
-        # déplacer le vaisseau latéralement
-        self.current_offset_x = self.current_offset_x + self.SPEED_X * time_factor
-        # retour à l'état initial si le terrain a avancé d'une case :
-        spacing_y = self.H_LINES_SPACING * self.height
-        if self.current_offset_y >= spacing_y:
-            self.current_offset_y -= spacing_y
+        Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     def on_parent(self, widget, parent):
         pass
@@ -131,6 +118,30 @@ class MainWidget(Widget):
         tr_x = self.perspective_point_x + offset_x
         tr_y = self.perspective_point_y - factor_y * self.perspective_point_y
         return int(tr_x), int(tr_y)
+
+    def update(self, dt):
+        # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
+        # print(str(dt*60))
+        time_factor = dt * 60
+        # actualiser la grille et faire avancer le terrain :
+        self.update_vertical_lines()
+        self.update_horizontal_lines()
+        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        # déplacer le vaisseau latéralement
+        self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
+        # retour à l'état initial si le terrain a avancé d'une case :
+        spacing_y = self.H_LINES_SPACING * self.height
+        if self.current_offset_y >= spacing_y:
+            self.current_offset_y -= spacing_y
+
+    def on_touch_down(self, touch):
+        if touch.x >= self.width/2:
+            self.current_speed_x = self.SPEED_X
+        else:
+            self.current_speed_x = -self.SPEED_X
+
+    def on_touch_up(self, touch):
+        self.current_speed_x = 0
 
 
 class GalaxyApp(App):
