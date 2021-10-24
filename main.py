@@ -17,20 +17,23 @@ class MainWidget(Widget):
     horizontal_lines = []
 
     current_offset_y = 0
-    SPEED = 2
+    SPEED = 1
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(
             **kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
         self.init_vertical_lines()
         self.init_horizontal_lines()
-        Clock.schedule_interval(self.update, 1/60)
+        Clock.schedule_interval(self.update, 1.0/60.0)
 
     def update(self, dt):
+        # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
+        # print(str(dt*60))
+        time_factor = dt * 60
         # actualiser la grille etfaire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
-        self.current_offset_y = self.current_offset_y + self.SPEED
+        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
