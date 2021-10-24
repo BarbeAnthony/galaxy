@@ -8,12 +8,12 @@ class MainWidget(Widget):
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
-    V_LINES_NB = 8  # doit être pair
-    V_LINES_SPACING = .1  # % of width
+    V_LINES_NB = 10  # doit être pair
+    V_LINES_SPACING = .25  # % of width
     vertical_lines = []
 
-    H_LINES_NB = 8
-    H_LINES_SPACING = .2  # % of height
+    H_LINES_NB = 7
+    H_LINES_SPACING = .1  # % of height
     horizontal_lines = []
 
     def __init__(self, **kwargs):
@@ -88,13 +88,16 @@ class MainWidget(Widget):
         return int(x), int(y)
 
     def transform_perspective(self, x, y):
-        tr_y = y * self.perspective_point_y / self.height
-        if tr_y > self.perspective_point_y:
-            tr_y = self.perspective_point_y
+        lin_y = y * self.perspective_point_y / self.height
+        if lin_y > self.perspective_point_y:
+            lin_y = self.perspective_point_y
         diff_x = x - self.perspective_point_x
-        diff_y = self.perspective_point_y - tr_y
-        offset_x = diff_x * diff_y / self.perspective_point_y
+        diff_y = self.perspective_point_y - lin_y
+        factor_y = diff_y / self.perspective_point_y
+        factor_y = pow(factor_y, 4)
+        offset_x = diff_x * factor_y
         tr_x = self.perspective_point_x + offset_x
+        tr_y = self.perspective_point_y - factor_y * self.perspective_point_y
         return int(tr_x), int(tr_y)
 
 
