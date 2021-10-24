@@ -8,7 +8,7 @@ class MainWidget(Widget):
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
-    V_LINES_NB = 7 #DOIT ETRE IMPAIR
+    V_LINES_NB = 8  # doit être pair
     V_LINES_SPACING = .1  # % of width
     vertical_lines = []
 
@@ -42,9 +42,9 @@ class MainWidget(Widget):
                 self.vertical_lines.append(Line())
 
     def update_vertical_lines(self):
-        central_line_x = self.width/2
+        central_line_x = self.width / 2
         spacing = self.V_LINES_SPACING * self.width
-        offset = -int(self.V_LINES_NB/2) * spacing
+        offset = (-self.V_LINES_NB / 2 + 0.5) * spacing
         for line in self.vertical_lines:
             line_x = int(central_line_x + offset)
             x1, y1 = self.transform(line_x, 0)
@@ -60,7 +60,7 @@ class MainWidget(Widget):
         return x, y
 
     def transform_perspective(self, x, y):
-        tr_y = y * self.perspective_point_y/self.height
+        tr_y = y * self.perspective_point_y / self.height
         if tr_y > self.perspective_point_y:
             tr_y = self.perspective_point_y
         diff_x = x - self.perspective_point_x
