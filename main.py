@@ -1,3 +1,7 @@
+from kivy.config import Config
+Config.set('graphics', 'width', '900')
+Config.set('graphics', 'height', '400')
+
 from kivy.app import App
 from kivy.graphics import Color, Line
 from kivy.properties import NumericProperty, Clock
@@ -19,6 +23,9 @@ class MainWidget(Widget):
     current_offset_y = 0
     SPEED = 1
 
+    current_offset_x = 0
+    SPEED_X = 3
+
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(
             **kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
@@ -30,10 +37,12 @@ class MainWidget(Widget):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
         time_factor = dt * 60
-        # actualiser la grille etfaire avancer le terrain :
+        # actualiser la grille et faire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        # déplacer le vaisseau latéralement
+        self.current_offset_x = self.current_offset_x + self.SPEED_X * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
@@ -68,7 +77,7 @@ class MainWidget(Widget):
         spacing_x = self.V_LINES_SPACING * self.width
         offset_x = (-self.V_LINES_NB / 2 + 0.5) * spacing_x
         for line in self.vertical_lines:
-            line_x = int(central_line_x + offset_x)
+            line_x = int(central_line_x + offset_x - self.current_offset_x)
             x1, y1 = self.transform(line_x, 0)
             x2, y2 = self.transform(line_x, self.height)
             line.points = (x1, y1, x2, y2)
@@ -89,8 +98,8 @@ class MainWidget(Widget):
         central_line_x = self.width / 2
         spacing_x = self.V_LINES_SPACING * self.width
         offset_x = (-self.V_LINES_NB / 2 + 0.5) * spacing_x
-        x_min = central_line_x + offset_x
-        x_max = central_line_x - offset_x
+        x_min = central_line_x + offset_x - self.current_offset_x
+        x_max = central_line_x - offset_x - self.current_offset_x
 
         for line in self.horizontal_lines:
             x1, y1 = self.transform(x_min, line_y - self.current_offset_y)
