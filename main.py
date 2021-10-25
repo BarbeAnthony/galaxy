@@ -18,12 +18,12 @@ class MainWidget(Widget):
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
-    V_LINES_NB = 10  # doit être pair
-    V_LINES_SPACING = .25  # % of width
+    V_LINES_NB = 4  # doit être pair
+    V_LINES_SPACING = .1  # % of width
     vertical_lines = []
 
     H_LINES_NB = 8
-    H_LINES_SPACING = .1  # % of height
+    H_LINES_SPACING = .15  # % of height
     horizontal_lines = []
 
     current_offset_y = 0
@@ -53,17 +53,21 @@ class MainWidget(Widget):
             for i in range(0, self.V_LINES_NB):
                 self.vertical_lines.append(Line())
 
-    def update_vertical_lines(self):
-        central_line_x = self.width / 2
+    def get_line_x_from_index(self, index):
+        central_line_x = self.perspective_point_x
         spacing_x = self.V_LINES_SPACING * self.width
-        offset_x = (-self.V_LINES_NB / 2 + 0.5) * spacing_x
+        offset_x = (index - 0.5) * spacing_x
+        line_x = int(central_line_x + offset_x - self.current_offset_x)
+        return line_x
+
+    def update_vertical_lines(self):
         # traçage des lignes verticales
-        for line in self.vertical_lines:
-            line_x = int(central_line_x + offset_x - self.current_offset_x)
+        start_index = -int(self.V_LINES_NB/2) + 1
+        for i in range(start_index, start_index + self.V_LINES_NB):
+            line_x = self.get_line_x_from_index(i)
             x1, y1 = self.transform(line_x, 0)
             x2, y2 = self.transform(line_x, self.height)
-            line.points = (x1, y1, x2, y2)
-            offset_x += spacing_x
+            self.vertical_lines[i].points = (x1, y1, x2, y2)
 
     def init_horizontal_lines(self):
         with self.canvas:
@@ -77,11 +81,10 @@ class MainWidget(Widget):
         spacing_y = self.H_LINES_SPACING * self.height
 
         # limiter la largeur des lignes horizontales aux lignes verticales extrèmes
-        central_line_x = self.width / 2
-        spacing_x = self.V_LINES_SPACING * self.width
-        offset_x = (-self.V_LINES_NB / 2 + 0.5) * spacing_x
-        x_min = central_line_x + offset_x - self.current_offset_x
-        x_max = central_line_x - offset_x - self.current_offset_x
+        start_index = -int(self.V_LINES_NB / 2) + 1
+        end_index = start_index + self.V_LINES_NB - 1
+        x_min = self.get_line_x_from_index(start_index)
+        x_max = self.get_line_x_from_index(end_index)
 
         # traçage des lignes horizontales
         for line in self.horizontal_lines:
@@ -97,7 +100,7 @@ class MainWidget(Widget):
         # actualiser la grille et faire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
-        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        # self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
