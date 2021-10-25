@@ -36,6 +36,7 @@ class MainWidget(Widget):
     tile = None
     ti_x = 1
     ti_y = 2
+    current_y_loop = 0
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
@@ -104,6 +105,7 @@ class MainWidget(Widget):
             self.tile = Quad()
 
     def get_tile_coordinates(self, ti_x, ti_y):
+        ti_y = ti_y - self.current_y_loop
         x = self.get_line_x_from_index(ti_x)
         y = self.get_line_y_from_index(ti_y)
         return int(x), int(y)
@@ -129,11 +131,12 @@ class MainWidget(Widget):
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.update_tiles()
-        # self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
             self.current_offset_y -= spacing_y
+            self.current_y_loop += 1
         # déplacer le vaisseau latéralement
         self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
 
