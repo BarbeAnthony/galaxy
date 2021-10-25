@@ -53,10 +53,10 @@ class MainWidget(Widget):
             for i in range(0, self.V_LINES_NB):
                 self.vertical_lines.append(Line())
 
-    def get_line_x_from_index(self, index):
+    def get_line_x_from_index(self, h_index):
         central_line_x = self.perspective_point_x
         spacing_x = self.V_LINES_SPACING * self.width
-        offset_x = (index - 0.5) * spacing_x
+        offset_x = (h_index - 0.5) * spacing_x
         line_x = int(central_line_x + offset_x - self.current_offset_x)
         return line_x
 
@@ -75,11 +75,12 @@ class MainWidget(Widget):
             for i in range(0, self.H_LINES_NB):
                 self.horizontal_lines.append(Line())
 
-    def update_horizontal_lines(self):
-        # 1ère ligne au bas de l'écran, puis espacement
-        line_y = 0
+    def get_line_y_from_index(self, v_index):
         spacing_y = self.H_LINES_SPACING * self.height
+        line_y = v_index * spacing_y - self.current_offset_y
+        return line_y
 
+    def update_horizontal_lines(self):
         # limiter la largeur des lignes horizontales aux lignes verticales extrèmes
         start_index = -int(self.V_LINES_NB / 2) + 1
         end_index = start_index + self.V_LINES_NB - 1
@@ -87,11 +88,10 @@ class MainWidget(Widget):
         x_max = self.get_line_x_from_index(end_index)
 
         # traçage des lignes horizontales
-        for line in self.horizontal_lines:
-            x1, y1 = self.transform(x_min, line_y - self.current_offset_y)
-            x2, y2 = self.transform(x_max, line_y - self.current_offset_y)
-            line.points = (x1, y1, x2, y2)
-            line_y += spacing_y
+        for i in range(0, self.H_LINES_NB):
+            x1, y1 = self.transform(x_min, self.get_line_y_from_index(i))
+            x2, y2 = self.transform(x_max, self.get_line_y_from_index(i))
+            self.horizontal_lines[i].points = (x1, y1, x2, y2)
 
     def update(self, dt):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
@@ -100,7 +100,7 @@ class MainWidget(Widget):
         # actualiser la grille et faire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
-        # self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
