@@ -6,7 +6,7 @@ Config.set('graphics', 'height', '400')
 from kivy.core.window import Window
 from kivy import platform
 from kivy.app import App
-from kivy.graphics import Color, Line
+from kivy.graphics import Color, Line, Quad
 from kivy.properties import NumericProperty, Clock
 from kivy.uix.widget import Widget
 
@@ -33,10 +33,15 @@ class MainWidget(Widget):
     current_speed_x = 0
     SPEED_X = 15
 
+    tile = None
+    ti_x = 1
+    ti_y = 2
+
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
         self.init_vertical_lines()
         self.init_horizontal_lines()
+        self.init_tiles()
         if self.is_desktop:
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
             self._keyboard.bind(on_key_down=self.on_keyboard_down, on_key_up=self.on_keyboard_up)
@@ -93,6 +98,29 @@ class MainWidget(Widget):
             x2, y2 = self.transform(x_max, self.get_line_y_from_index(i))
             self.horizontal_lines[i].points = (x1, y1, x2, y2)
 
+    def init_tiles(self):
+        with self.canvas:
+            Color(1, 1, 1)
+            self.tile = Quad()
+
+    def get_tile_coordinates(self, ti_x, ti_y):
+        x = self.get_line_x_from_index(ti_x)
+        y = self.get_line_y_from_index(ti_y)
+        return int(x), int(y)
+
+    def update_tiles(self):
+        xmin, ymin = self.get_tile_coordinates(self.ti_x, self.ti_y)
+        xmax, ymax = self.get_tile_coordinates(self.ti_x + 1, self.ti_y + 1)
+
+        # 2 (xmin, ymax)    3 (xmax, ymax)
+        #
+        # 1 (xmin,ymin)     4 (xmax, ymin)
+        x1, y1 = self.transform(xmin, ymin)
+        x2, y2 = self.transform(xmin, ymax)
+        x3, y3 = self.transform(xmax, ymax)
+        x4, y4 = self.transform(xmax, ymin)
+        self.tile.points = [x1, y1, x2, y2, x3, y3, x4, y4]
+
     def update(self, dt):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
@@ -100,7 +128,8 @@ class MainWidget(Widget):
         # actualiser la grille et faire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
-        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        self.update_tiles()
+        # self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # retour à l'état initial si le terrain a avancé d'une case :
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
