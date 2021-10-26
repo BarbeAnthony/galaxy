@@ -7,7 +7,7 @@ from kivy.core.window import Window
 from kivy import platform
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad, Triangle
-from kivy.properties import NumericProperty, Clock
+from kivy.properties import NumericProperty, Clock, ObjectProperty
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.lang import Builder
 import random
@@ -19,6 +19,7 @@ class MainWidget(RelativeLayout):
     from user_actions import on_keyboard_up, on_keyboard_down, keyboard_closed, on_touch_down, on_touch_up
     from transforms import transform, transform_2D, transform_perspective
 
+    menu_widget = ObjectProperty(None)
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
@@ -49,9 +50,10 @@ class MainWidget(RelativeLayout):
     ship_hitbox_coordinates = (0, 0)  #pointe du vaisseau
 
     state_game_over = False
+    state_game_has_started = False
 
     def __init__(self, **kwargs):
-        super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
+        super(MainWidget, self).__init__(**kwargs)
         self.init_vertical_lines()
         self.init_horizontal_lines()
         self.init_tiles()
@@ -220,18 +222,21 @@ class MainWidget(RelativeLayout):
         return False
 
     def update(self, dt):
-        # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
+        # Pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
         time_factor = dt * 60
 
-        # actualiser la grille et faire avancer le terrain :
+        # Actualiser la grille :
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.update_tiles()
         self.ship_update()
-        if not self.state_game_over:  # calculs à effectuer seulement si le jeu est en cours
+
+        # Gérer le mouvement (si jeu en cours)
+        if self.state_game_has_started and not self.state_game_over:
+            # Avancée du terrain
             self.current_offset_y = self.current_offset_y + self.SPEED * self.height * time_factor
-            # Quand le terrain a avancé d'une case
+            # Quand le terrain a avancé d'une case :
             spacing_y = self.H_LINES_SPACING * self.height
             while self.current_offset_y >= spacing_y:
                 # recul du terrain d'une case
@@ -246,7 +251,15 @@ class MainWidget(RelativeLayout):
         # tester si le vaisseau est sur la piste
         if not self.check_ship_collisions() and not self.state_game_over:
             self.state_game_over = True
+            self.menu_widget.opacity = 1
+            self.menu_widget.disabled = False
             print("GAME OVER")
+
+    def on_menu_button_pressed(self):
+        self.state_game_has_started = True
+        self.menu_widget.opacity = 0
+        self.menu_widget.disabled = True
+        print("bouton")
 
 
 class GalaxyApp(App):
