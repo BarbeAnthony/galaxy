@@ -19,8 +19,8 @@ class MainWidget(Widget):
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
-    V_LINES_NB = 4  # doit être pair
-    V_LINES_SPACING = .1  # % of width
+    V_LINES_NB = 8  # doit être pair
+    V_LINES_SPACING = .2  # % of width
     vertical_lines = []
 
     H_LINES_NB = 8
@@ -90,10 +90,10 @@ class MainWidget(Widget):
 
     def update_horizontal_lines(self):
         # limiter la largeur des lignes horizontales aux lignes verticales extrèmes
-        start_index = -int(self.V_LINES_NB / 2) + 1
-        end_index = start_index + self.V_LINES_NB - 1
-        x_min = self.get_line_x_from_index(start_index)
-        x_max = self.get_line_x_from_index(end_index)
+        start_v_index = -int(self.V_LINES_NB / 2) + 1
+        end_v_index = start_v_index + self.V_LINES_NB - 1
+        x_min = self.get_line_x_from_index(start_v_index)
+        x_max = self.get_line_x_from_index(end_v_index)
 
         # traçage des lignes horizontales
         for i in range(0, self.H_LINES_NB):
@@ -119,8 +119,17 @@ class MainWidget(Widget):
             next_x = self.tiles_coordinates[-1][0]
             next_y = self.tiles_coordinates[-1][1] + 1
         # création de nouveaux tiles
+        start_v_index = -int(self.V_LINES_NB / 2) + 1
+        end_v_index = start_v_index + self.V_LINES_NB - 1
         for i in range(len(self.tiles_coordinates)-1, self.NB_TILES):
-            trajectoire = random.randint(-1, 1)
+            # limiter la trajectoire à la grille affichée
+            if next_x == start_v_index:
+                trajectoire = random.randint(0, 1)
+            elif next_x == end_v_index-1:
+                trajectoire = random.randint(-1, 0)
+            else:
+                trajectoire = random.randint(-1, 1)
+            # tracer la trajectoire
             self.tiles_coordinates.append((next_x, next_y))
             if trajectoire == -1:  # décaler à gauche
                 next_x -= 1
