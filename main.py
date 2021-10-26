@@ -9,6 +9,7 @@ from kivy.app import App
 from kivy.graphics import Color, Line, Quad
 from kivy.properties import NumericProperty, Clock
 from kivy.uix.widget import Widget
+import random
 
 
 class MainWidget(Widget):
@@ -28,13 +29,13 @@ class MainWidget(Widget):
 
     current_offset_y = 0
     current_y_loop = 0
-    SPEED = 1
+    SPEED = 3
 
     current_offset_x = 0
     current_speed_x = 0
     SPEED_X = 15
 
-    NB_TILES = 4
+    NB_TILES = 8
     tiles = []
     tiles_coordinates = []
 
@@ -108,16 +109,29 @@ class MainWidget(Widget):
 
     def generate_tiles_coordinates(self):
         next_y = 0
+        next_x = 0
         # Actualisation des tiles :
         if len(self.tiles_coordinates) > 0:
             # suppression des tiles passés
             for i in range(len(self.tiles_coordinates)-1, -1, -1):
                 if self.tiles_coordinates[i][1] < self.current_y_loop:
                     del self.tiles_coordinates[i]
+            next_x = self.tiles_coordinates[-1][0]
             next_y = self.tiles_coordinates[-1][1] + 1
         # création de nouveaux tiles
         for i in range(len(self.tiles_coordinates)-1, self.NB_TILES):
-            self.tiles_coordinates.append((0, next_y))
+            trajectoire = random.randint(-1, 1)
+            self.tiles_coordinates.append((next_x, next_y))
+            if trajectoire == -1:  # décaler à gauche
+                next_x -= 1
+                self.tiles_coordinates.append((next_x, next_y))
+                next_y += 1
+                self.tiles_coordinates.append((next_x, next_y))
+            elif trajectoire == 1:  # décaler à droite
+                next_x += 1
+                self.tiles_coordinates.append((next_x, next_y))
+                next_y += 1
+                self.tiles_coordinates.append((next_x, next_y))
             next_y += 1
 
     def get_tile_coordinates(self, ti_x, ti_y):
