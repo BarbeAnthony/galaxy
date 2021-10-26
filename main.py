@@ -107,8 +107,18 @@ class MainWidget(Widget):
                 self.tiles.append(Quad())
 
     def generate_tiles_coordinates(self):
-        for i in range(0, self.NB_TILES):
-            self.tiles_coordinates.append((0, i))
+        next_y = 0
+        # Actualisation des tiles :
+        if len(self.tiles_coordinates) > 0:
+            # suppression des tiles passés
+            for i in range(len(self.tiles_coordinates)-1, -1, -1):
+                if self.tiles_coordinates[i][1] < self.current_y_loop:
+                    del self.tiles_coordinates[i]
+            next_y = self.tiles_coordinates[-1][1] + 1
+        # création de nouveaux tiles
+        for i in range(len(self.tiles_coordinates)-1, self.NB_TILES):
+            self.tiles_coordinates.append((0, next_y))
+            next_y += 1
 
     def get_tile_coordinates(self, ti_x, ti_y):
         ti_y = ti_y - self.current_y_loop
@@ -141,11 +151,15 @@ class MainWidget(Widget):
         self.update_horizontal_lines()
         self.update_tiles()
         self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
-        # retour à l'état initial si le terrain a avancé d'une case :
+        # Quand le terrain a avancé d'une case
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
+            # recul du terrain d'une case
             self.current_offset_y -= spacing_y
+            # comptage du nombre de cases passées dans la partie
             self.current_y_loop += 1
+            # suppression des tiles passés et création de nouveaux tiles
+            self.generate_tiles_coordinates()
         # déplacer le vaisseau latéralement
         self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
 
