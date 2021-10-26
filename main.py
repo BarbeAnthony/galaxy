@@ -44,6 +44,7 @@ class MainWidget(Widget):
         self.init_vertical_lines()
         self.init_horizontal_lines()
         self.init_tiles()
+        self.pre_fill_tiles_coordinates()
         self.generate_tiles_coordinates()
         if self.is_desktop:
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
@@ -106,6 +107,11 @@ class MainWidget(Widget):
             Color(1, 1, 1)
             for i in range(0, self.NB_TILES):
                 self.tiles.append(Quad())
+
+    def pre_fill_tiles_coordinates(self):
+        # démarer la partie par une ligne droite de 10 tiles
+        for i in range(0,10):
+            self.tiles_coordinates.append((0, i))
 
     def generate_tiles_coordinates(self):
         next_y = 0
