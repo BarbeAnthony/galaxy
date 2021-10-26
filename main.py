@@ -29,11 +29,11 @@ class MainWidget(Widget):
 
     current_offset_y = 0
     current_y_loop = 0
-    SPEED = 3
+    SPEED = .005  # % of height
 
     current_offset_x = 0
     current_speed_x = 0
-    SPEED_X = 20
+    SPEED_X = .02  # % of width
 
     NB_TILES = 8
     tiles = []
@@ -203,7 +203,7 @@ class MainWidget(Widget):
         self.update_horizontal_lines()
         self.update_tiles()
         self.ship_update()
-        self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
+        self.current_offset_y = self.current_offset_y + self.SPEED * self.height * time_factor
         # Quand le terrain a avancé d'une case
         spacing_y = self.H_LINES_SPACING * self.height
         if self.current_offset_y >= spacing_y:
@@ -214,7 +214,7 @@ class MainWidget(Widget):
             # suppression des tiles passés et création de nouveaux tiles
             self.generate_tiles_coordinates()
         # déplacer le vaisseau latéralement
-        self.current_offset_x = self.current_offset_x + self.current_speed_x * time_factor
+        self.current_offset_x = self.current_offset_x + self.current_speed_x * self.width * time_factor
 
 
 class GalaxyApp(App):
