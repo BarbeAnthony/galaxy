@@ -29,7 +29,7 @@ class MainWidget(Widget):
 
     current_offset_y = 0
     current_y_loop = 0
-    SPEED = .005  # % of height
+    SPEED = .008  # % of height    .005 easy   .008 normal   .012 hard
 
     current_offset_x = 0
     current_speed_x = 0
@@ -44,6 +44,8 @@ class MainWidget(Widget):
     SHIP_BASE_Y = 0.04  # % oh height
     ship = None
     ship_hitbox_coordinates = (0, 0)  #pointe du vaisseau
+
+    state_game_over = False
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
@@ -218,26 +220,29 @@ class MainWidget(Widget):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
         time_factor = dt * 60
+
         # actualiser la grille et faire avancer le terrain :
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.update_tiles()
         self.ship_update()
-        self.current_offset_y = self.current_offset_y + self.SPEED * self.height * time_factor
-        # Quand le terrain a avancé d'une case
-        spacing_y = self.H_LINES_SPACING * self.height
-        if self.current_offset_y >= spacing_y:
-            # recul du terrain d'une case
-            self.current_offset_y -= spacing_y
-            # comptage du nombre de cases passées dans la partie
-            self.current_y_loop += 1
-            # suppression des tiles passés et création de nouveaux tiles
-            self.generate_tiles_coordinates()
-        # déplacer le vaisseau latéralement
-        self.current_offset_x = self.current_offset_x + self.current_speed_x * self.width * time_factor
+        if not self.state_game_over:  # calculs à effectuer seulement si le jeu est en cours
+            self.current_offset_y = self.current_offset_y + self.SPEED * self.height * time_factor
+            # Quand le terrain a avancé d'une case
+            spacing_y = self.H_LINES_SPACING * self.height
+            while self.current_offset_y >= spacing_y:
+                # recul du terrain d'une case
+                self.current_offset_y -= spacing_y
+                # comptage du nombre de cases passées dans la partie
+                self.current_y_loop += 1
+                # suppression des tiles passés et création de nouveaux tiles
+                self.generate_tiles_coordinates()
+            # déplacer le vaisseau latéralement
+            self.current_offset_x = self.current_offset_x + self.current_speed_x * self.width * time_factor
 
         # tester si le vaisseau est sur la piste
-        if not self.check_ship_collisions():
+        if not self.check_ship_collisions() and not self.state_game_over:
+            self.state_game_over = True
             print("GAME OVER")
 
 
