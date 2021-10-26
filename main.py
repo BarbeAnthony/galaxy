@@ -43,6 +43,7 @@ class MainWidget(Widget):
     SHIP_HEIGHT = 0.035  # % oh height
     SHIP_BASE_Y = 0.04  # % oh height
     ship = None
+    ship_hitbox_coordinates = (0, 0)  #pointe du vaisseau
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
@@ -187,12 +188,31 @@ class MainWidget(Widget):
         base_y = self.SHIP_BASE_Y * self.height
         half_width = self.SHIP_WIDTH * self.width /2
         height = self.SHIP_HEIGHT * self.height
-        #   2
+        #   2 <- (Hitbox)
         # 1   3
         x1, y1 = self.transform(center_x-half_width, base_y)
-        x2, y2 = self.transform(center_x, base_y + height)
+        self.ship_hitbox_coordinates = center_x, base_y + height
+        x2, y2 = self.transform(*self.ship_hitbox_coordinates)
         x3, y3 = self.transform(center_x + half_width, base_y)
         self.ship.points = [x1, y1, x2, y2, x3, y3]
+
+    def check_ship_collision_with_tile(self, ti_x, ti_y):
+        xmin, ymin = self.get_tile_coordinates(ti_x, ti_y)
+        xmax, ymax = self.get_tile_coordinates(ti_x + 1, ti_y + 1)
+        if xmin <= self.ship_hitbox_coordinates[0] <= xmax and ymin <= self.ship_hitbox_coordinates[1] <= ymax:
+            return True
+        return False
+
+    def check_ship_collisions(self):
+        for i in range(0, len(self.tiles_coordinates)):
+            ti_x, ti_y = self.tiles_coordinates[i]
+            # on ne teste pas les tiles au delà de la deuxième rangée car collision impossible
+            if ti_y > self.current_y_loop + 1:
+                return False
+            # test de collision
+            if self.check_ship_collision_with_tile(ti_x, ti_y):
+                return True
+        return False
 
     def update(self, dt):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
@@ -215,6 +235,10 @@ class MainWidget(Widget):
             self.generate_tiles_coordinates()
         # déplacer le vaisseau latéralement
         self.current_offset_x = self.current_offset_x + self.current_speed_x * self.width * time_factor
+
+        # tester si le vaisseau est sur la piste
+        if not self.check_ship_collisions():
+            print("GAME OVER")
 
 
 class GalaxyApp(App):
