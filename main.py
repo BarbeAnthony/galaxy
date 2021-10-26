@@ -6,7 +6,7 @@ Config.set('graphics', 'height', '400')
 from kivy.core.window import Window
 from kivy import platform
 from kivy.app import App
-from kivy.graphics import Color, Line, Quad
+from kivy.graphics import Color, Line, Quad, Triangle
 from kivy.properties import NumericProperty, Clock
 from kivy.uix.widget import Widget
 import random
@@ -20,7 +20,7 @@ class MainWidget(Widget):
     perspective_point_y = NumericProperty(0)
 
     V_LINES_NB = 8  # doit être pair
-    V_LINES_SPACING = .2  # % of width
+    V_LINES_SPACING = .4  # % of width
     vertical_lines = []
 
     H_LINES_NB = 8
@@ -33,11 +33,16 @@ class MainWidget(Widget):
 
     current_offset_x = 0
     current_speed_x = 0
-    SPEED_X = 15
+    SPEED_X = 20
 
     NB_TILES = 8
     tiles = []
     tiles_coordinates = []
+
+    SHIP_WIDTH = 0.1  # % of width
+    SHIP_HEIGHT = 0.035  # % oh height
+    SHIP_BASE_Y = 0.04  # % oh height
+    ship = None
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)  # Pourquoi ces arguments pour super? TO DO   (vidéo 297 point de perspective)
@@ -46,6 +51,7 @@ class MainWidget(Widget):
         self.init_tiles()
         self.pre_fill_tiles_coordinates()
         self.generate_tiles_coordinates()
+        self.ship_init()
         if self.is_desktop:
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
             self._keyboard.bind(on_key_down=self.on_keyboard_down, on_key_up=self.on_keyboard_up)
@@ -171,6 +177,23 @@ class MainWidget(Widget):
             x4, y4 = self.transform(xmax, ymin)
             tile.points = [x1, y1, x2, y2, x3, y3, x4, y4]
 
+    def ship_init(self):
+        with self.canvas:
+            Color(0, 0, 0)
+            self.ship = Triangle()
+
+    def ship_update(self):
+        center_x = self.width/2
+        base_y = self.SHIP_BASE_Y * self.height
+        half_width = self.SHIP_WIDTH * self.width /2
+        height = self.SHIP_HEIGHT * self.height
+        #   2
+        # 1   3
+        x1, y1 = self.transform(center_x-half_width, base_y)
+        x2, y2 = self.transform(center_x, base_y + height)
+        x3, y3 = self.transform(center_x + half_width, base_y)
+        self.ship.points = [x1, y1, x2, y2, x3, y3]
+
     def update(self, dt):
         # pour stabiliser la vitesse de défilement du niveau, indépendament des fps du périphérique utilisé
         # print(str(dt*60))
@@ -179,6 +202,7 @@ class MainWidget(Widget):
         self.update_vertical_lines()
         self.update_horizontal_lines()
         self.update_tiles()
+        self.ship_update()
         self.current_offset_y = self.current_offset_y + self.SPEED * time_factor
         # Quand le terrain a avancé d'une case
         spacing_y = self.H_LINES_SPACING * self.height
