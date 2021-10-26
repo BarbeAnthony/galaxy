@@ -8,11 +8,14 @@ from kivy import platform
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad, Triangle
 from kivy.properties import NumericProperty, Clock
-from kivy.uix.widget import Widget
+from kivy.uix.relativelayout import RelativeLayout
+from kivy.lang import Builder
 import random
 
+Builder.load_file("menu.kv")
 
-class MainWidget(Widget):
+
+class MainWidget(RelativeLayout):
     from user_actions import on_keyboard_up, on_keyboard_down, keyboard_closed, on_touch_down, on_touch_up
     from transforms import transform, transform_2D, transform_perspective
 
