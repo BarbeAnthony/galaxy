@@ -1,5 +1,28 @@
+#:import menu menu
+
 MainWidget:
 
 <MainWidget>:
+    menu_widget: menu_widget_id
     perspective_point_x: self.width/2
     perspective_point_y: self.height*0.75
+    canvas.before:
+        Rectangle:
+            source: "images/bg1.jpg"
+            size: self.size
+    MenuWidget:
+        id: menu_widget_id
+        size: self.size
+        pos: self.pos
+    Label:
+        text: root.score_text
+        font_size: "20dp"
+        font_name: "fonts/Eurostile.ttf"
+        pos_hint: {"x": 0, "top": 1}
+        size_hint: None, None
+        size: self.texture_size
+        padding: "10dp", "10dp"
+        opacity: 0 if root.menu_title == "G   A   L   A   X   Y" else 1
+
+<CoverImage@CoverBehavior+Image>:
+    reference_size: self.texture_size
