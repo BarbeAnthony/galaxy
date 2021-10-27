@@ -31,6 +31,8 @@ class MainWidget(RelativeLayout):
     V_LINES_NB = 8  # doit être pair
     V_LINES_SPACING = .4  # % of width
     vertical_lines = []
+    start_v_index = -int(V_LINES_NB / 2) + 1
+    end_v_index = start_v_index + V_LINES_NB - 1
 
     H_LINES_NB = 8
     H_LINES_SPACING = .15  # % of height
@@ -125,8 +127,7 @@ class MainWidget(RelativeLayout):
 
     def update_vertical_lines(self):
         # traçage des lignes verticales
-        start_index = -int(self.V_LINES_NB/2) + 1
-        for i in range(start_index, start_index + self.V_LINES_NB):
+        for i in range(self.start_v_index, self.start_v_index + self.V_LINES_NB):
             line_x = self.get_line_x_from_index(i)
             x1, y1 = self.transform(line_x, 0)
             x2, y2 = self.transform(line_x, self.height)
@@ -145,10 +146,8 @@ class MainWidget(RelativeLayout):
 
     def update_horizontal_lines(self):
         # limiter la largeur des lignes horizontales aux lignes verticales extrèmes
-        start_v_index = -int(self.V_LINES_NB / 2) + 1
-        end_v_index = start_v_index + self.V_LINES_NB - 1
-        x_min = self.get_line_x_from_index(start_v_index)
-        x_max = self.get_line_x_from_index(end_v_index)
+        x_min = self.get_line_x_from_index(self.start_v_index)
+        x_max = self.get_line_x_from_index(self.end_v_index)
 
         # traçage des lignes horizontales
         for i in range(0, self.H_LINES_NB):
@@ -179,13 +178,11 @@ class MainWidget(RelativeLayout):
             next_x = self.tiles_coordinates[-1][0]
             next_y = self.tiles_coordinates[-1][1] + 1
         # création de nouveaux tiles
-        start_v_index = -int(self.V_LINES_NB / 2) + 1
-        end_v_index = start_v_index + self.V_LINES_NB - 1
         for i in range(len(self.tiles_coordinates)-1, self.NB_TILES):
             # limiter la trajectoire à la grille affichée
-            if next_x == start_v_index:
+            if next_x == self.start_v_index:
                 trajectoire = random.randint(0, 1)
-            elif next_x == end_v_index-1:
+            elif next_x == self.end_v_index-1:
                 trajectoire = random.randint(-1, 0)
             else:
                 trajectoire = random.randint(-1, 1)
