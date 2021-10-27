@@ -6,7 +6,14 @@ MainWidget:
     menu_widget: menu_widget_id
     perspective_point_x: self.width/2
     perspective_point_y: self.height*0.75
+    canvas.before:
+        Rectangle:
+            source: "images/bg1.jpg"
+            size: self.size
     MenuWidget:
         id: menu_widget_id
         size: self.size
         pos: self.pos
+
+<CoverImage@CoverBehavior+Image>:
+    reference_size: self.texture_size
