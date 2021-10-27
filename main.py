@@ -7,7 +7,7 @@ from kivy.core.window import Window
 from kivy import platform
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad, Triangle
-from kivy.properties import NumericProperty, Clock, ObjectProperty
+from kivy.properties import NumericProperty, Clock, ObjectProperty, StringProperty
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.lang import Builder
 import random
@@ -20,6 +20,9 @@ class MainWidget(RelativeLayout):
     from transforms import transform, transform_2D, transform_perspective
 
     menu_widget = ObjectProperty(None)
+    menu_title = StringProperty("G   A   L   A   X   Y")
+    menu_button_title = StringProperty("START")
+
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
 
@@ -261,14 +264,16 @@ class MainWidget(RelativeLayout):
         # tester si le vaisseau est sur la piste
         if not self.check_ship_collisions() and not self.state_game_over:
             self.state_game_over = True
+            self.menu_title = "G  A  M  E    O  V  E  R"
+            self.menu_button_title = "RESTART"
             self.menu_widget.opacity = 1
             self.menu_widget.disabled = False
 
     def on_menu_button_pressed(self):
+        self.reset_game()
         self.state_game_has_started = True
         self.menu_widget.opacity = 0
         self.menu_widget.disabled = True
-        self.reset_game()
 
 
 class GalaxyApp(App):
