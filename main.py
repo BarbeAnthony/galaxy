@@ -4,6 +4,7 @@ Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '400')
 
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 from kivy import platform
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad, Triangle
@@ -56,8 +57,16 @@ class MainWidget(RelativeLayout):
     state_game_over = False
     state_game_has_started = False
 
+    sound_galaxy_voice = None
+    sound_begin_voice = None
+    sound_restart_voice = None
+    sound_game_over_voice = None
+    sound_game_over_impact = None
+    sound_music1 = None
+
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)
+        self.init_sounds()
         self.init_vertical_lines()
         self.init_horizontal_lines()
         self.init_tiles()
@@ -67,6 +76,7 @@ class MainWidget(RelativeLayout):
             self._keyboard = Window.request_keyboard(self.keyboard_closed, self)
             self._keyboard.bind(on_key_down=self.on_keyboard_down, on_key_up=self.on_keyboard_up)
         Clock.schedule_interval(self.update, 1.0 / 60.0)
+        self.sound_galaxy_voice.play()
 
     def reset_game(self):
         self.current_offset_y = 0
@@ -84,6 +94,21 @@ class MainWidget(RelativeLayout):
         if platform in ('linux', 'win', 'macosx'):
             return True
         return False
+
+    def init_sounds(self):
+        self.sound_galaxy_voice = SoundLoader.load("audio/galaxy.wav")
+        self.sound_begin_voice = SoundLoader.load("audio/begin.wav")
+        self.sound_restart_voice = SoundLoader.load("audio/restart.wav")
+        self.sound_game_over_voice = SoundLoader.load("audio/gameover_voice.wav")
+        self.sound_game_over_impact = SoundLoader.load("audio/gameover_impact.wav")
+        self.sound_music1 = SoundLoader.load("audio/music1.wav")
+
+        self.sound_galaxy_voice.volume = .25
+        self.sound_begin_voice.volume = .25
+        self.sound_restart_voice.volume = .25
+        self.sound_game_over_voice.volume = .25
+        self.sound_game_over_impact.volume = .3
+        self.sound_music1.volume = 1
 
     def init_vertical_lines(self):
         with self.canvas:
@@ -269,10 +294,22 @@ class MainWidget(RelativeLayout):
             self.state_game_over = True
             self.menu_widget.opacity = 1
             self.menu_widget.disabled = False
+            self.sound_game_over_impact.play()
+            Clock.schedule_once(self.play_gameover_voice, 0.4)
+            self.sound_music1.stop()
+
+    def play_gameover_voice(self, dt):
+        if self.state_game_over:
+            self.sound_game_over_voice.play()
 
     def on_menu_button_pressed(self):
         self.reset_game()
-        self.state_game_has_started = True
+        if not self.state_game_has_started:
+            self.sound_begin_voice.play()
+            self.state_game_has_started = True
+        else:
+            self.sound_restart_voice.play()
+        self.sound_music1.play()
         self.menu_widget.opacity = 0
         self.menu_widget.disabled = True
         self.menu_title = "G  A  M  E    O  V  E  R"
