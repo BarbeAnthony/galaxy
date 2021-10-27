@@ -22,6 +22,7 @@ class MainWidget(RelativeLayout):
     menu_widget = ObjectProperty(None)
     menu_title = StringProperty("G   A   L   A   X   Y")
     menu_button_title = StringProperty("START")
+    score_text = StringProperty("")
 
     perspective_point_x = NumericProperty(0)
     perspective_point_y = NumericProperty(0)
@@ -70,6 +71,7 @@ class MainWidget(RelativeLayout):
     def reset_game(self):
         self.current_offset_y = 0
         self.current_y_loop = 0
+        self.score_text = "SCORE : " + str(self.current_y_loop)
         self.current_offset_x = 0
         self.current_speed_x = 0
         self.tiles_coordinates = []
@@ -256,6 +258,7 @@ class MainWidget(RelativeLayout):
                 self.current_offset_y -= spacing_y
                 # comptage du nombre de cases passées dans la partie
                 self.current_y_loop += 1
+                self.score_text = "SCORE : " + str(self.current_y_loop)
                 # suppression des tiles passés et création de nouveaux tiles
                 self.generate_tiles_coordinates()
             # déplacer le vaisseau latéralement
@@ -264,8 +267,6 @@ class MainWidget(RelativeLayout):
         # tester si le vaisseau est sur la piste
         if not self.check_ship_collisions() and not self.state_game_over:
             self.state_game_over = True
-            self.menu_title = "G  A  M  E    O  V  E  R"
-            self.menu_button_title = "RESTART"
             self.menu_widget.opacity = 1
             self.menu_widget.disabled = False
 
@@ -274,6 +275,8 @@ class MainWidget(RelativeLayout):
         self.state_game_has_started = True
         self.menu_widget.opacity = 0
         self.menu_widget.disabled = True
+        self.menu_title = "G  A  M  E    O  V  E  R"
+        self.menu_button_title = "RESTART"
 
 
 class GalaxyApp(App):
